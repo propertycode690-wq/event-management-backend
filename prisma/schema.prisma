@@ -1,0 +1,192 @@
+// Prisma Schema for National Hunting Network Portal Backend - Database: MySQL `club` in phpMyAdmin
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         String   @default("MEMBER")
+  phone        String?
+  stateCode    String?
+  clubId       String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Member {
+  id         String   @id @default(uuid())
+  name       String
+  email      String   @unique
+  phone      String?
+  state      String?
+  club       String?
+  status     String   @default("Active")
+  duesAmount Float    @default(35.0)
+  joinDate   String?
+  createdAt  DateTime @default(now())
+}
+
+model StateAssociation {
+  id            String   @id @default(uuid())
+  name          String
+  code          String   @unique
+  organizations String   @default("UKC,PKC")
+  adminName     String?
+  clubsCount    Int      @default(0)
+  membersCount  Int      @default(0)
+  eventsCount   Int      @default(0)
+  revenue       Float    @default(0.0)
+  createdAt     DateTime @default(now())
+}
+
+model LocalClub {
+  id            String   @id @default(uuid())
+  name          String
+  city          String
+  county        String?
+  state         String
+  stateCode     String
+  stateId       String
+  zip           String?
+  distanceMiles Float?
+  dogType       String?
+  federation    String?
+  eventType     String?
+  membersCount  Int      @default(0)
+  eventsCount   Int      @default(0)
+  entriesCount  Int      @default(0)
+  revenue       Float    @default(0.0)
+  adminName     String?
+  createdAt     DateTime @default(now())
+}
+
+model Event {
+  id           String   @id @default(uuid())
+  name         String
+  federation   String
+  sport        String?
+  type         String
+  club         String
+  clubId       String
+  state        String
+  stateCode    String
+  city         String
+  date         String
+  fee          Float
+  entriesCount Int      @default(0)
+  maxCapacity  Int      @default(50)
+  status       String   @default("Registration Open")
+  deadline     String?
+  address      String?
+  description  String?  @db.Text
+  startTime    String?
+  createdAt    DateTime @default(now())
+}
+
+model EventEntry {
+  id               String   @id @default(uuid())
+  eventId          String
+  dogId            String?
+  participant      String
+  handlerPhone     String?
+  fee              Float
+  paymentStatus    String   @default("Paid")
+  confirmationCode String
+  createdAt        DateTime @default(now())
+}
+
+model Product {
+  id               String   @id @default(uuid())
+  name             String
+  price            Float
+  category         String
+  scopeChannel     String   @default("NATIONAL")
+  scopeEntity      String?
+  organizationType String?
+  organizationId   String?
+  profit           Float    @default(0.0)
+  description      String?  @db.Text
+  image            String?
+  createdAt        DateTime @default(now())
+}
+
+model Order {
+  id                String   @id @default(uuid())
+  orderNumber       String   @unique
+  customerName      String
+  customerEmail     String?
+  total             Float
+  status            String   @default("Completed")
+  fulfillmentStatus String   @default("Processing")
+  payoutStatus      String   @default("Pending")
+  clubId            String?
+  trackingNumber    String?
+  carrier           String?
+  itemsJson         String?  @db.Text
+  createdAt         DateTime @default(now())
+}
+
+model DonationPledge {
+  id         String   @id @default(uuid())
+  entityType String
+  entityId   String
+  amount     Float
+  tier       String?
+  cause      String?
+  donorName  String?
+  donorEmail String?
+  status     String   @default("PENDING_GATEWAY")
+  createdAt  DateTime @default(now())
+}
+
+model FinancialTransaction {
+  id          String   @id @default(uuid())
+  type        String
+  category    String
+  amount      Float
+  period      String?
+  stateId     String?
+  clubId      String?
+  description String?  @db.Text
+  createdAt   DateTime @default(now())
+}
+
+model News {
+  id        String   @id @default(uuid())
+  title     String
+  summary   String   @db.Text
+  category  String
+  author    String
+  date      String
+  state     String?
+  createdAt DateTime @default(now())
+}
+
+model CompetitionResult {
+  id           String   @id @default(uuid())
+  eventId      String?
+  eventName    String
+  club         String?
+  state        String?
+  stateCode    String?
+  placement    String?
+  place        Int?     @default(1)
+  winnerDog    String
+  winnerDogReg String?
+  breed        String?  @default("Coonhound")
+  owner        String?
+  participant  String
+  score        String?  @default("0 Pts")
+  date         String?
+  status       String?  @default("Published")
+  createdAt    DateTime @default(now())
+}
