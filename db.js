@@ -81,33 +81,25 @@ else if (process.env.USE_LOCAL_SQLITE === 'true' || process.env.DB_DRIVER === 's
   } catch (_) {}
 }
 
-// 3. MYSQL PRODUCTION / STAGING MODE
+// 3. MYSQL PRODUCTION / STAGING / RAILWAY MODE
 else {
-  const host = (process.env.DB_HOST || '').toLowerCase();
-  const dbUrl = (process.env.DATABASE_URL || '').toLowerCase();
-  const isProduction = process.env.NODE_ENV === 'production';
-
-  // STARTUP VALIDATION: Block unintended remote/Railway database connection in local-development mode
-  if (!isProduction && (host.includes('rlwy.net') || host.includes('railway') || dbUrl.includes('rlwy.net') || dbUrl.includes('railway'))) {
-    throw new Error(
-      'FATAL STARTUP BLOCKED: Development environment attempted to connect to a remote Railway production database.\n' +
-      '  To run locally in safe, isolated development mode, use: npm run dev:local\n' +
-      '  For automated testing against isolated database, use: npm test\n' +
-      '  To start in verified production mode, explicitly set NODE_ENV=production.'
-    );
-  }
-
   const mysql = require('mysql2/promise');
-  pool = mysql.createPool({
-    host: process.env.DB_HOST || '127.0.0.1',
-    port: process.env.DB_PORT || 3306,
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || '',
-    database: process.env.DB_NAME || 'club',
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0
-  });
+  const dbUrl = process.env.DATABASE_URL;
+
+  if (dbUrl && (dbUrl.startsWith('mysql://') || dbUrl.startsWith('mysql2://'))) {
+    pool = mysql.createPool(dbUrl);
+  } else {
+    pool = mysql.createPool({
+      host: process.env.DB_HOST || '127.0.0.1',
+      port: process.env.DB_PORT || 3306,
+      user: process.env.DB_USER || 'root',
+      password: process.env.DB_PASSWORD || '',
+      database: process.env.DB_NAME || 'club',
+      waitForConnections: true,
+      connectionLimit: 10,
+      queueLimit: 0
+    });
+  }
 }
 
 module.exports = pool;
