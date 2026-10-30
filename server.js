@@ -264,7 +264,7 @@ app.put('/api/v1/users/:id/status', verifyToken, requireRole('SUPER_ADMIN'), asy
       });
     }
 
-    const [userRows] = await db.query('SELECT id, status FROM `User` WHERE id = ?', [id]);
+    const [userRows] = await db.query('SELECT id FROM `User` WHERE id = ?', [id]);
     if (!userRows || userRows.length === 0) {
       return res.status(404).json({
         success: false,
@@ -272,7 +272,16 @@ app.put('/api/v1/users/:id/status', verifyToken, requireRole('SUPER_ADMIN'), asy
       });
     }
 
-    await db.query('UPDATE `User` SET `status` = ? WHERE `id` = ?', [status, id]);
+    try {
+      await db.query('UPDATE `User` SET `status` = ? WHERE `id` = ?', [status, id]);
+    } catch (statusColErr) {
+      if (statusColErr.code === 'ER_BAD_FIELD_ERROR' || (statusColErr.message && statusColErr.message.includes('Unknown column'))) {
+        await db.query("ALTER TABLE `User` ADD COLUMN `status` VARCHAR(50) DEFAULT 'Active'");
+        await db.query('UPDATE `User` SET `status` = ? WHERE `id` = ?', [status, id]);
+      } else {
+        throw statusColErr;
+      }
+    }
 
     return res.json({
       success: true,
@@ -346,10 +355,30 @@ app.get('/api/v1/news', async (req, res) => {
 // Officers API Endpoint from MySQL Database
 app.get('/api/v1/officers', async (req, res) => {
   try {
-    const [users] = await db.query("SELECT * FROM `User` WHERE role LIKE '%ADMIN%' OR role = 'CLUB_ADMIN'");
+    const [users] = await db.query("SELECT id, name, email, phone, role, stateCode, clubId FROM `User` WHERE role LIKE '%ADMIN%' OR role = 'CLUB_ADMIN'");
+    const titleMap = {
+      SUPER_ADMIN: 'Super Administrator',
+      NATIONAL_ADMIN: 'National Charter Director',
+      STATE_ADMIN: 'State Charter President',
+      CLUB_ADMIN: 'Club President',
+      EVENT_ADMIN: 'Master of Hounds'
+    };
+    const officersList = users.map((u, idx) => ({
+      id: u.id,
+      name: u.name,
+      email: u.email,
+      phone: u.phone || '(865) 555-0192',
+      role: u.role,
+      title: titleMap[u.role] || 'Charter Officer',
+      club: u.clubId === 'club-1' || !u.clubId ? 'Oak Ridge Hunting Club' : u.clubId,
+      term: '2026 - 2028',
+      photo: idx % 2 === 0
+        ? 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80'
+        : 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80'
+    }));
     return res.json({
       success: true,
-      data: users.length > 0 ? users : [
+      data: officersList.length > 0 ? officersList : [
         { id: 'off-1', name: 'Robert Miller', title: 'Club President', role: 'CLUB_ADMIN', club: 'Oak Ridge Hunting Club', email: 'robert.miller@oakridgehc.org', phone: '(865) 555-0192' },
         { id: 'off-2', name: 'Cody Campbell', title: 'Master of Hounds', role: 'CLUB_ADMIN', club: 'Oak Ridge Hunting Club', email: 'cody.campbell@oakridgehc.org', phone: '(865) 555-0193' }
       ],

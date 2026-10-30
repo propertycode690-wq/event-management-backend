@@ -1,0 +1,45 @@
+{
+  "resultA": {
+    "label": "Current_Live_Railway_InstanceA_centerbeam",
+    "fileName": "backup_Current_Live_Railway_InstanceA_centerbeam_2026-10-30T06-47-15-854Z.json",
+    "filePath": "c:\\Users\\admin\\Desktop\\98645312\\Events\\backend\\backups\\backup_Current_Live_Railway_InstanceA_centerbeam_2026-10-30T06-47-15-854Z.json",
+    "sizeBytes": 36421,
+    "tableCount": 13,
+    "tableSummary": {
+      "ClubClaim": 1,
+      "CompetitionResult": 0,
+      "DonationPledge": 0,
+      "Event": 2,
+      "EventEntry": 0,
+      "FinancialTransaction": 0,
+      "LocalClub": 3,
+      "Member": 0,
+      "News": 0,
+      "Order": 0,
+      "Product": 14,
+      "StateAssociation": 7,
+      "User": 13
+    }
+  },
+  "resultB": {
+    "label": "Candidate_50States_InstanceB_iriguchi",
+    "fileName": "backup_Candidate_50States_InstanceB_iriguchi_2026-10-30T06-47-30-171Z.json",
+    "filePath": "c:\\Users\\admin\\Desktop\\98645312\\Events\\backend\\backups\\backup_Candidate_50States_InstanceB_iriguchi_2026-10-30T06-47-30-171Z.json",
+    "sizeBytes": 75588,
+    "tableCount": 12,
+    "tableSummary": {
+      "ClubClaim": 6,
+      "DonationPledge": 0,
+      "Event": 15,
+      "EventEntry": 0,
+      "FinancialTransaction": 11,
+      "LocalClub": 14,
+      "Member": 6,
+      "News": 6,
+      "Order": 0,
+      "Product": 14,
+      "StateAssociation": 50,
+      "User": 2
+    }
+  }
+}

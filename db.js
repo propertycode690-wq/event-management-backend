@@ -84,7 +84,7 @@ else if (process.env.USE_LOCAL_SQLITE === 'true' || process.env.DB_DRIVER === 's
 // 3. MYSQL PRODUCTION / STAGING / RAILWAY MODE
 else {
   const mysql = require('mysql2/promise');
-  const DEFAULT_RAILWAY_DB = 'mysql://root:PRTPRVJMLydCnXnYRgazQxqOOCBhxIkz@centerbeam.proxy.rlwy.net:53549/railway';
+  const DEFAULT_RAILWAY_DB = 'mysql://root:wwOyLdhgbawFdXEoeBrvXeUQIyjlxxSw@iriguchi.proxy.rlwy.net:58182/railway';
   const dbUrl = process.env.DATABASE_URL || DEFAULT_RAILWAY_DB;
 
   if (dbUrl && (dbUrl.startsWith('mysql://') || dbUrl.startsWith('mysql2://'))) {
