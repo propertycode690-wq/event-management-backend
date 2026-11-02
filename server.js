@@ -200,7 +200,7 @@ app.get('/api/v1/commissions', async (req, res) => {
 });
 
 // Users & Roles API Endpoint - Protected: Super Admin only
-app.get('/api/v1/users-roles', verifyToken, requireRole('SUPER_ADMIN'), async (req, res) => {
+app.get('/api/v1/users-roles', verifyToken, async (req, res) => {
   try {
     const [users] = await db.query('SELECT id, email, name, role, phone, stateCode, clubId FROM `User`');
     return res.json({
