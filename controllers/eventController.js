@@ -382,7 +382,7 @@ const checkInEntry = async (req, res) => {
     }
 
     // 5. Update DB
-    const checkedInAt = checkInStatus === 'Checked In' ? new Date().toISOString() : null;
+    const checkedInAt = checkInStatus === 'Checked In' ? new Date().toISOString().slice(0, 19).replace('T', ' ') : null;
     await db.query(
       'UPDATE `EventEntry` SET `checkInStatus` = ?, `checkedInAt` = ? WHERE `id` = ?',
       [checkInStatus, checkedInAt, id]
