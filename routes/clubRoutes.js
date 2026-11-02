@@ -4,6 +4,7 @@ const clubController = require('../controllers/clubController');
 const { verifyToken } = require('../middlewares/authMiddleware');
 
 router.get('/', clubController.getClubs);
+router.post('/', verifyToken, clubController.createClub);
 router.post('/claims', clubController.createClaimRequest);
 router.get('/:id', clubController.getClubById);
 router.put('/:id', verifyToken, clubController.updateClub);

@@ -241,7 +241,86 @@ const updateClub = async (req, res) => {
   }
 };
 
+
+const createClub = async (req, res) => {
+  try {
+    const {
+      name,
+      city,
+      county,
+      state,
+      stateCode,
+      zip,
+      dogType,
+      federation,
+      eventType,
+      adminName,
+      membersCount,
+      eventsCount,
+      entriesCount,
+      revenue,
+      logo
+    } = req.body;
+
+    if (!name || !city || !state) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'INVALID_INPUT', message: 'Club Name, City, and State are required' }
+      });
+    }
+
+    const cleanStateCode = (stateCode || (state ? state.slice(0, 2) : 'TN')).trim().toUpperCase();
+    const cleanId = `club-${Date.now().toString().slice(-6)}`;
+    const cleanStateId = `state-${cleanStateCode.toLowerCase()}`;
+    const cleanLogo = logo || 'https://images.unsplash.com/photo-1544816155-12df9643f363?w=200&auto=format&fit=crop&q=80';
+
+    await db.query(
+      `INSERT INTO \`LocalClub\` (
+        \`id\`, \`name\`, \`logo\`, \`city\`, \`county\`, \`state\`, \`stateCode\`, \`stateId\`,
+        \`zip\`, \`distanceMiles\`, \`dogType\`, \`federation\`, \`eventType\`,
+        \`membersCount\`, \`eventsCount\`, \`entriesCount\`, \`revenue\`, \`adminName\`
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        cleanId,
+        name.trim(),
+        cleanLogo,
+        city.trim(),
+        county ? county.trim() : `${city.trim()} County`,
+        state.trim(),
+        cleanStateCode,
+        cleanStateId,
+        zip ? zip.trim() : '37701',
+        15.0,
+        dogType || 'Coonhounds',
+        federation || 'UKC',
+        eventType || 'Nite Hunt',
+        Number(membersCount) || 15,
+        Number(eventsCount) || 2,
+        Number(entriesCount) || 0,
+        Number(revenue) || 0.0,
+        adminName || 'Assigned Club Admin'
+      ]
+    );
+
+    // Increment clubsCount on the parent StateAssociation
+    try {
+      await db.query('UPDATE \`StateAssociation\` SET clubsCount = clubsCount + 1 WHERE code = ? OR id = ?', [cleanStateCode, cleanStateId]);
+    } catch (_) {}
+
+    const [createdRows] = await db.query('SELECT * FROM \`LocalClub\` WHERE \`id\` = ?', [cleanId]);
+    return res.status(201).json({
+      success: true,
+      data: createdRows[0],
+      message: `Local Club '${name}' successfully created in MySQL database`
+    });
+  } catch (err) {
+    console.error('[Create Club Error]:', err.message);
+    return res.status(500).json({ success: false, error: { code: 'DB_ERROR', message: err.message } });
+  }
+};
+
 module.exports = {
+  createClub,
   getClubs,
   getClubById,
   pledgeClubDonation,

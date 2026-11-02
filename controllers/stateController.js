@@ -86,7 +86,62 @@ const pledgeStateDonation = async (req, res) => {
   }
 };
 
+
+const createState = async (req, res) => {
+  try {
+    const { name, code, organizations, adminName, clubsCount, membersCount, eventsCount, revenue } = req.body;
+    if (!name || !code) {
+      return res.status(400).json({ success: false, error: { code: 'INVALID_INPUT', message: 'State Name and State Code are required' } });
+    }
+    const cleanCode = code.trim().toUpperCase();
+    const cleanName = name.trim();
+    const id = `state-${cleanCode.toLowerCase()}`;
+    const orgsStr = Array.isArray(organizations) ? organizations.join(',') : (organizations || 'UKC,PKC');
+
+    await db.query(
+      `INSERT INTO \`StateAssociation\` (\`id\`, \`name\`, \`code\`, \`organizations\`, \`adminName\`, \`clubsCount\`, \`membersCount\`, \`eventsCount\`, \`revenue\`)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+       ON DUPLICATE KEY UPDATE
+         \`name\` = VALUES(\`name\`),
+         \`organizations\` = VALUES(\`organizations\`),
+         \`adminName\` = VALUES(\`adminName\`),
+         \`clubsCount\` = VALUES(\`clubsCount\`),
+         \`membersCount\` = VALUES(\`membersCount\`),
+         \`eventsCount\` = VALUES(\`eventsCount\`),
+         \`revenue\` = VALUES(\`revenue\`);`,
+      [
+        id,
+        cleanName,
+        cleanCode,
+        orgsStr,
+        adminName || 'Assigned Director',
+        Number(clubsCount) || 0,
+        Number(membersCount) || 0,
+        Number(eventsCount) || 0,
+        Number(revenue) || 0.0
+      ]
+    );
+
+    const [createdRows] = await db.query('SELECT * FROM \`StateAssociation\` WHERE \`id\` = ?', [id]);
+    const created = createdRows[0];
+    const formatted = {
+      ...created,
+      organizations: typeof created.organizations === 'string' ? created.organizations.split(',') : (created.organizations || ['UKC', 'PKC'])
+    };
+
+    return res.status(201).json({
+      success: true,
+      data: formatted,
+      message: `State Association '${cleanName}' successfully saved in MySQL database`
+    });
+  } catch (err) {
+    console.error('[Create State Error]:', err.message);
+    return res.status(500).json({ success: false, error: { code: 'DB_ERROR', message: err.message } });
+  }
+};
+
 module.exports = {
+  createState,
   getStates,
   getStateById,
   pledgeStateDonation
