@@ -43,7 +43,7 @@ const isCloverConfigured = () => {
  */
 const makeCloverApiRequest = (endpoint, method, payload) => {
   return new Promise((resolve, reject) => {
-    const rawEnv = (process.env.CLOVER_ENVIRONMENT || '').trim().toLowerCase();
+    const rawEnv = (process.env.CLOVER_ENVIRONMENT || 'sandbox').trim().toLowerCase();
 
     // 1. Strict environment configuration validation
     if (!rawEnv) {
